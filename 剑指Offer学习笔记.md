@@ -304,13 +304,236 @@ class Solution:
 > 问题描述：请设计一个函数，用来判断在一个矩阵中是否存在一条包含某字符串所有字符的路径。路径可以从矩阵中的任意一格开始，每一步可以在矩阵中向左、右、上、下移动一格。如果一条路径经过了矩阵的某一格，那么该路径不能再次进入该格子。例如，在下面的3×4的矩阵中包含一条字符串“bfce”的路径（路径中的字母用下画线标出）。但矩阵中不包含字符串“abfb”的路径，因为字符串的第一个字符b占据了矩阵中的第一行第二个格子之后，路径不能再次进入这个格子。
 >
 
+<p align="center"><img src="https://zhgyqc.oss-cn-hangzhou.aliyuncs.com/矩阵中的路径.JPG" alt="" title="path_of_matrix">
+</p>
+
+- [源码](./solutions-LeetCode/JZ12.py)
+- 标签：`数组` `回溯` `矩阵` `DFS`
+- 思路一：本问题是典型的矩阵搜索问题，可以使用深度优先搜索（DFS）+剪枝的方法解决。深度优先搜索可以理解为暴力法遍历矩阵中所有字符串的可能性。DFS通过递归，先朝一个方向搜索到底，再回溯至上个节点，沿另一个方向搜索，以此类推。在搜索过程中，遇到这条路不可能与目标字符串匹配成功的情况，则应立即返回，称之为可行性剪枝。
+  - 时间复杂度：![时间复杂度](https://latex.codecogs.com/svg.image?O(3^KMN))
+  - 空间复杂度：![空间复杂度](https://latex.codecogs.com/svg.image?O(K))
+
+### 面试题13：机器人的运动范围
+
+> 问题描述：地上有一个m行n列的方格。一个机器人从坐标(0, 0)的格子开始移动，它每次可以向左、右、上、下移动一格，但不能进入行坐标和列坐标的数位之和大于k的格子。例如，当k为18时，机器人能够进入方格(35, 37)，因为3+5+3+7=18。但它不能进入方格(35, 38)，因为3+5+3+8=19。请问该机器人能够到达多少个格子。
+
+- [源码](./solutions-LeetCode/JZ13.py)
+- 标签：`回溯` `矩阵` `DFS`
+- 思路一：从[0,0]开始，每次选择一个方向开始检查能否访问，如果能访问进入该节点，该节点作为子问题，继续按照这个思路访问，一条路走到黑，然后再回溯，回溯的过程中每个子问题再选择其他方向，正是深度优先搜索。
+  - 时间复杂度：![时间复杂度](https://latex.codecogs.com/svg.image?O(MN))，其中*m*与*n*分别为格子的边长，深度优先搜索最坏情况下遍历格子每个位置一次
+  - 空间复杂度：![空间复杂度](https://latex.codecogs.com/svg.image?O(MN))
+
+```python
+class Solution:
+    def movingCount(self, m: int, n: int, k: int) -> int:
+        def getDigitSum(i, j):
+            res = 0
+            while i:
+                res += i % 10
+                i //= 10
+            while j:
+                res += j % 10
+                j //= 10
+            return res
+
+        visited = set()
+
+        def dfs(i, j):
+            if not 0 <= i < m or not 0 <= j < n or getDigitSum(i, j) > k or (i, j) in visited:
+                return 0
+            visited.add((i, j))
+            return 1 + dfs(i, j + 1) + dfs(i + 1, j)
+
+        return dfs(0, 0)
+```
+
+### 面试题14：剪绳子
+
+> 问题描述：给你一根长度为*n*的绳子，请把绳子剪成*m*段（*m*、*n*都是整数，*n>1*并且*m>1*），每段绳子的长度记为*k[0], k[1], ..., k[m]*。请问*k[0]×k[1]× ...×k[m]*可能的最大乘积是多少？例如，当绳子的长度是8时，我们把它剪成长度分别为2、3、3的三段，此时得到的最大乘积是18。
+
+- [源码](./solutions-LeetCode/JZ14.py)
+
+- 标签：`数学` `动态规划` `贪心算法`
+
+- 思路一：动态规划。本题给定一个大于1的正整数*n*，要求将*n*拆分成至少两个整数的和，并使这些正整数的乘积最大化，返回最大成绩值。令*x*是拆分出的第一个正整数，则剩下的部分是*n - x*，*n - x*可以不继续拆分，或者继续拆分成至少两个正整数的和。由于每个正整数对应的最大乘积取决于比它小的正整数对应的最大乘积，因此可以使用动态规划求解。创建数组*dp*，其中*dp[i]*表示将正整数*i*拆分成至少两个正整数的和之后，这些正整数的最大乘积。特别地，0不是正整数，1是最小正整数，0和1都不能拆分，因此*dp[0] = dp[1] = 0*。当*i >= 2*时，假设对正整数*i*拆分出的第一个正整数是*j*（1 <= j < i），则有以下两种方案：将*i*拆分成*j*和*i - j*的和，且*i - j*不再拆分成多个正整数，此时的乘积是*j × (i - j)*；将*i*拆分成*j*和*i - j*的和，且*i - j*继续拆分成多个正整数，此时的乘积是*j × dp[i - j]*。因此，当*j*固定时，有*dp[i] = max(j × (i - j), j × dp[i - j])*。由于*j*的取值范围是1到*i - 1*，需要遍历所有的*j*得到*dp[i]*的最大值，因此可以得到的状态转移方程如下：
+  $$
+  dp[i] = max_{1\leq j<i} \{max(j\times(i - j), j\times dp[i - j])\}
+  $$
+
+  - 时间复杂度：![时间复杂度](https://latex.codecogs.com/svg.image?O(n^2))
+  - 空间复杂度：![空间复杂度](https://latex.codecogs.com/svg.image?O(n))
+
+- 思路二：贪心算法。核心思路是尽可能地将绳子分为长度为3的小段，这样乘积最大。具体步骤如下：当*n<=3*时，返回*n-1*，当*n=4*时，返回4，当*n>=5*时，尽可能多地剪长度为3的绳子。
+
+  - 时间复杂度：![时间复杂度](https://latex.codecogs.com/svg.image?O(n))
+  - 空间复杂度：![空间复杂度](https://latex.codecogs.com/svg.image?O(1))
 
 
+```python
+class Solution:
+    def cuttingRope(self, n: int) -> int:
+        if n <= 3:
+            return n - 1
+        times_of_3 = n // 3
+        if n - times_of_3 * 3 == 0:
+            return int(math.pow(3, times_of_3))
+        if n - times_of_3 * 3 == 1:
+            return int(math.pow(3, times_of_3 - 1) * 4)
+        return int(math.pow(3, times_of_3) * 2)
+```
 
+### 面试题15：二进制中1的个数
 
+> 问题描述：请实现一个函数，输入一个整数，输出该数二进制表示中1的个数。例如，把9表示成二进制是1001，有2位是1。因此，如果输入9，则该函数输出2。
 
+- [源码](./solutions-LeetCode/JZ15.py)
+- 标签：`位运算`
+- 思路一：巧用*n&(n-1)*。*n&(n-1)*的结果恰为把*n*的二进制位中的最低位的1变为0之后的结果，在实际代码中，我们不断让当前的*n*与*n-1*做与运算，直到*n*变为0即可。因为每次运算会使得*n*的最低位的1被翻转，因此运算次数就等于*n*的二进制位中1的个数。
+  - 时间复杂度：![时间复杂度](https://latex.codecogs.com/svg.image?O(logn))
+  - 空间复杂度：![空间复杂度](https://latex.codecogs.com/svg.image?O(1))
 
+```python
+class Solution:
+    def hammingWeight(self, n: int) -> int:
+        res = 0
+        while n:
+            n &= n - 1
+            res += 1
 
+        return res
+```
+
+### 面试题16：数值的整数次方
+
+> 问题描述：实现函数double Power (double base, int exponent)，求base的exponent次方。不得使用库函数，同时不需要考虑大数问题。
+
+- [源码](./solutions-LeetCode/JZ16.py)
+- 标签：`递归` `数学`
+
+- 思路一：快速幂法。假设输入的指数exponent为32，即目标是求出一个数字的32次方，如果我们已经知道了它的16次方，那么只要在16次方的基础上再平方一次就可以了。而16次方是8次方的平方。这样以此类推，求32次方只需要做5次乘法：先求平方，在平方的基础上求4次方，在4次方的基础上求8次方，在8次方的基础上求16次方，最后在16次方的基础上求32次方。也就是说，我们可以用如下公式求*a*的*n*次方：
+  $$
+  a^n=\begin{cases}
+  a^{n/2}\cdot a^{n/2} &\text{n为偶数}\\
+  a^{(n-1)/2}\cdot a^{n/2}\cdot a &\text{n为奇数}\\
+  \end{cases}
+  $$
+
+  - 时间复杂度：![时间复杂度](https://latex.codecogs.com/svg.image?O(logn))
+  - 空间复杂度：![空间复杂度](https://latex.codecogs.com/svg.image?O(1))
+
+```python
+class Solution:
+    def myPow(self, x: float, n: int) -> float:
+        if x == 0:
+            return 0
+        if n < 0:
+            x, n = 1 / x, -n
+        res = 1
+        while n:
+            if n & 1:
+                res *= x
+            x *= x
+            n >>= 1
+        return res
+```
+
+### 面试题17：打印从1到最大的n位数
+
+> 问题描述：输入数字n，按顺序打印出从1到最大的n位十进制数。比如输入3，则打印1、2、3一直到最大的3位数999。
+>
+
+- [源码](./solutions-LeetCode/JZ17.py)
+- 标签：`数组` `数学`
+- 思路一：由于本题没有限定*n*的范围，因此我们需要考虑大数越界的情况。解决大数问题最常用的方法就是使用字符串或者数组。在用字符串表示数字的时候，最直观的方法就是字符串里每个字符都是，0〜9，之间的某一个字符，用来表示数字中的一位。如果我们在数字前面补0，就会发现*n*位所有十进制数其实就是*n*个从0到9的全排列。也就是说，我们把数字的每一位都从0到9排列一遍，就得到了所有的十进制数。
+  - 时间复杂度：![时间复杂度](https://latex.codecogs.com/svg.image?O(10^n))
+  - 空间复杂度：![空间复杂度](https://latex.codecogs.com/svg.image?O(10^n))
+
+```python
+class Solution:
+    def printNumbers(self, n: int) -> [int]:
+        def dfs(x):
+            if x == n:
+                s = ''.join(num[self.start:])
+                if s != '0': res.append(int(s))
+                if n - self.start == self.nine: self.start -= 1
+                return
+            for i in range(10):
+                if i == 9: self.nine += 1
+                num[x] = str(i)
+                dfs(x + 1)
+            self.nine -= 1
+        
+        num, res = ['0'] * n, []
+        self.nine = 0
+        self.start = n - 1
+        dfs(0)
+        return res
+```
+
+### 面试题18：删除链表的节点
+
+#### 题目一：删除链表节点
+
+> 问题描述：给定单向链表的头指针和一个节点指针，定义一个函数删除该节点。
+
+- [源码](./solutions-LeetCode/JZ18.py)
+- 标签：`链表`
+- 思路一：要删除给定单向链表中的某个节点，只需要进行两步操作。一是，找到待删除节点的前一个节点；二是将pre-->next设置为pre->next->next。
+
+```python
+class ListNode:
+    def __init__(self, val):
+        self.val = val
+        self.next = None
+
+class Solution:
+    def deleteNode(self, head: ListNode, val: int) -> ListNode:
+        if head.val == val:
+            return head.next
+        pre = head
+        while pre.next and pre.next.val != val:
+            pre = pre.next
+        if pre.next:
+            pre.next = pre.next.next
+        return head
+```
+
+#### 题目二：删除链表中重复的节点
+
+> 问题描述：在一个排序的链表中，如何删除重复的节点。
+
+- 标签：`链表`
+- 思路一：首先检查链表是否为空或只有一个节点。如果是，则无需删除重复元素，直接返回链表头节点。定义两个指针：prev和curr。prev指向前一个节点，curr指向当前节点。初始时，prev指向头节点，curr指向第二个节点。遍历链表，直到curr到达链表尾部。在每一步迭代中，检查curr和prev节点的值是否相等。如果相等，则将prev的next指针跳过curr，使prev的next指向curr的next，以删除curr节点。否则，将prev和curr指针都向前移动一个节点。最后，返回头节点。
+
+```python
+class ListNode:
+    def __init__(self, val):
+        self.val = val
+        self.next = None
+        
+class Solution:
+    def deleteDuplicates(self, head: ListNode) -> ListNode:
+        # 如果链表为空或只有一个节点，则无重复节点需要删除
+        if not head or not head.next:
+            return head
+
+        # 初始化双指针，一个指向前一个节点，一个指向当前节点
+        prev = head
+        curr = head.next
+
+        # 遍历链表
+        while curr:
+            # 如果当前节点的值等于前一个节点的值，则说明当前节点是重复节点，需要删除
+            if curr.val == prev.val:
+                # 删除当前节点
+                prev.next = curr.next
+                curr = curr.next
+            else:
+                # 不是重复节点，将双指针都向前移动
+                prev = curr
+                curr = curr.next
+        return head
+```
 
 
 
@@ -320,3 +543,4 @@ class Solution:
 
 - 在面试中要和面试官主动交流，一定要在动手写代码之前弄清楚面试官的需求，包括功能要求和性能要求等；
 - 当我们需要解决一个复杂的问题时，一个很有效的办法就是从一个具体的问题入手，通过分析简单具体的例子，试图寻找普遍的规律；
+- 除法的效率比移位运算要低得多，在实际编程中应尽可能地用移位运算符代替乘除法。

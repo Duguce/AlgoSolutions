@@ -1,4 +1,4 @@
-# Algorithm-solutions
+# AlgoSolutions
 本仓库用来存储我所做过的来自各大题库的OJ算法题的题解（当前均使用***Python3***实现），以及算法学习的相关笔记。
 
 其中，题库包括：
