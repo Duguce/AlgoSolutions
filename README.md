@@ -4,7 +4,7 @@
 
 其中，题库包括：
 
-- [Example题库](./solutions-Example)
+- [Examples题库](./solutions-Examples)
 - [洛谷题库](./solutions-LUOGU)
 - [浙江大学计算机程序能力测试（PAT）题库](./solutions-PAT)
 - [力扣（LeetCode）题库](./solutions-LeetCode)
